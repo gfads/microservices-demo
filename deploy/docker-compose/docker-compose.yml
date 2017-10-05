@@ -3,6 +3,8 @@ version: '2'
 services:
   front-end:
     image: weaveworksdemos/front-end
+    networks:
+      - weavedemo_backoffice
     hostname: front-end
     restart: always
     cap_drop:
@@ -10,6 +12,8 @@ services:
     read_only: true
   edge-router:
     image: weaveworksdemos/edge-router
+    networks:
+      - weavedemo_backoffice
     ports:
       - '80:80'
       - '8080:8080'
@@ -29,6 +33,8 @@ services:
   catalogue:
     #image: weaveworksdemos/catalogue
     image: gfads/catalogue:5a476e87
+    networks:
+      - weavedemo_backoffice
     hostname: catalogue
     restart: always
     cap_drop:
@@ -40,6 +46,8 @@ services:
       - ZIPKIN=http://zipkin:9411/api/v1/spans
   catalogue-db:
     image: weaveworksdemos/catalogue-db
+    networks:
+      - weavedemo_backoffice
     hostname: catalogue-db
     restart: always
     environment:
@@ -48,6 +56,8 @@ services:
       - MYSQL_DATABASE=socksdb
   carts:
     image: weaveworksdemos/carts
+    networks:
+      - weavedemo_backoffice
     hostname: carts
     restart: always
     cap_drop:
@@ -62,6 +72,8 @@ services:
       - ZIPKIN=zipkin
   carts-db:
     image: mongo
+    networks:
+      - weavedemo_backoffice
     hostname: carts-db
     restart: always
     cap_drop:
@@ -75,6 +87,8 @@ services:
       - /tmp:rw,noexec,nosuid
   orders:
     image: weaveworksdemos/orders
+    networks:
+      - weavedemo_backoffice
     hostname: orders
     restart: always
     cap_drop:
@@ -90,6 +104,8 @@ services:
       - ZIPKIN=zipkin
   orders-db:
     image: mongo
+    networks:
+      - weavedemo_backoffice
     hostname: orders-db
     restart: always
     cap_drop:
@@ -103,6 +119,8 @@ services:
       - /tmp:rw,noexec,nosuid
   shipping:
     image: weaveworksdemos/shipping
+    networks:
+      - weavedemo_backoffice
     hostname: shipping
     restart: always
     cap_drop:
@@ -116,20 +134,25 @@ services:
       - JAVA_OPTS=-Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
       - ZIPKIN=zipkin
   queue-master:
-    image: weaveworksdemos/queue-master
+    #image: weaveworksdemos/queue-master
+    image: gfads/queue-master
+    networks:
+      - weavedemo_backoffice
     hostname: queue-master
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
-    cap_drop:
-      - all
-    cap_add:
-      - NET_BIND_SERVICE
-    read_only: true
+    #cap_drop:
+    #  - all
+    #cap_add:
+    #  - NET_BIND_SERVICE
+    #read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid
   rabbitmq:
     image: rabbitmq:3.6.8-alpine
+    networks:
+      - weavedemo_backoffice
     hostname: rabbitmq
     restart: always
     cap_drop:
@@ -143,6 +166,8 @@ services:
   payment:
     #image: weaveworksdemos/payment
     image: gfads/payment:a440cf61
+    networks:
+      - weavedemo_backoffice
     hostname: payment
     restart: always
     cap_drop:
@@ -155,6 +180,8 @@ services:
   user:
     #image: weaveworksdemos/user
     image: gfads/user:10b11fe9
+    networks:
+      - weavedemo_backoffice
     hostname: user
     restart: always
     cap_drop:
@@ -167,6 +194,8 @@ services:
       - ZIPKIN=http://zipkin:9411/api/v1/spans
   user-db:
     image: weaveworksdemos/user-db
+    networks:
+      - weavedemo_backoffice
     hostname: user-db
     restart: always
     cap_drop:
@@ -180,6 +209,8 @@ services:
       - /tmp:rw,noexec,nosuid
   zipkin:
     image: openzipkin/zipkin
+    networks:
+      - weavedemo_backoffice
     hostname: zipkin
     restart: always
     cap_drop:
@@ -193,10 +224,17 @@ services:
       - /tmp:rw,noexec,nosuid
     ports:
       - "9411:9411"
-  user-sim:
-    image: weaveworksdemos/load-test
-    cap_drop:
-      - all
-    read_only: true
-    hostname: user-simulator
-    command: "-d 60 -r 200 -c 2 -h edge-router"
+  #user-sim:
+  #  image: weaveworksdemos/load-test
+  #  networks:
+  #    - weavedemo_backoffice
+  #  cap_drop:
+  #    - all
+  #  read_only: true
+  #  hostname: user-simulator
+  #  command: "-d 60 -r 200 -c 2 -h edge-router"
+
+
+networks:
+  weavedemo_backoffice:
+    driver: bridge
