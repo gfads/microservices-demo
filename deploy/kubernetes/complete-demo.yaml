@@ -1,3 +1,14 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sock-shop
+---
+apiVersion:
+kind: Namespace
+metadata:
+  name: zipkin
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -68,12 +79,12 @@ spec:
     spec:
       containers:
       - name: carts
-        image: weaveworksdemos/carts:0.4.8
+        image: weaveworksdemos/carts
         ports:
          - containerPort: 80
         env:
          - name: ZIPKIN
-           value: zipkin.zipkin.svc.cluster.local
+           value: http://zipkin.zipkin.svc.cluster.local
          - name: JAVA_OPTS
            value: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
         securityContext:
@@ -126,7 +137,7 @@ spec:
     spec:
       containers:
       - name: catalogue-db
-        image: weaveworksdemos/catalogue-db:0.3.0
+        image: weaveworksdemos/catalogue-db
         env:
           - name: MYSQL_ROOT_PASSWORD
             value: fake_password
@@ -169,7 +180,10 @@ spec:
     spec:
       containers:
       - name: catalogue
-        image: weaveworksdemos/catalogue:0.3.5
+        image: gfads/catalogue:5a476e87
+        env:
+          - name: ZIPKIN
+            value: http://zipkin.zipkin.svc.cluster.local/api/v1/spans
         ports:
         - containerPort: 80
         securityContext:
@@ -213,7 +227,7 @@ spec:
     spec:
       containers:
       - name: front-end
-        image: weaveworksdemos/front-end:0.3.12
+        image: weaveworksdemos/front-end
         resources:
           requests:
             cpu: 100m
@@ -316,10 +330,10 @@ spec:
     spec:
       containers:
       - name: orders
-        image: weaveworksdemos/orders:0.4.7
+        image: weaveworksdemos/orders
         env:
          - name: ZIPKIN
-           value: zipkin.zipkin.svc.cluster.local
+           value: http://zipkin.zipkin.svc.cluster.local
          - name: JAVA_OPTS
            value: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
         ports:
@@ -374,7 +388,10 @@ spec:
     spec:
       containers:
       - name: payment
-        image: weaveworksdemos/payment:0.4.3
+        image: gfads/payment:a440cf61
+        env:
+        - name: ZIPKIN
+          value: http://zipkin.zipkin.svc.cluster.local/api/v1/spans
         ports:
         - containerPort: 80
         securityContext:
@@ -420,7 +437,7 @@ spec:
     spec:
       containers:
       - name: queue-master
-        image: weaveworksdemos/queue-master:0.3.1
+        image: gfads/queue-master
         ports:
         - containerPort: 80
       nodeSelector:
@@ -459,7 +476,7 @@ spec:
     spec:
       containers:
       - name: rabbitmq
-        image: rabbitmq:3.6.8
+        image: rabbitmq:3.6.8-alpine
         ports:
         - containerPort: 5672
         securityContext:
@@ -488,7 +505,7 @@ spec:
   - port: 5672
     targetPort: 5672
   selector:
-    name: rabbitmq
+    name: rabbitm
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -506,10 +523,10 @@ spec:
     spec:
       containers:
       - name: shipping
-        image: weaveworksdemos/shipping:0.4.8
+        image: weaveworksdemos/shipping
         env:
          - name: ZIPKIN
-           value: zipkin.zipkin.svc.cluster.local
+           value: http://zipkin.zipkin.svc.cluster.local
          - name: JAVA_OPTS
            value: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
         ports:
@@ -564,7 +581,7 @@ spec:
     spec:
       containers:
       - name: user-db
-        image: weaveworksdemos/user-db:0.4.0
+        image: weaveworksdemos/user-db
         ports:
         - name: mongo
           containerPort: 27017
@@ -618,10 +635,12 @@ spec:
     spec:
       containers:
       - name: user
-        image: weaveworksdemos/user:0.4.4
+        image: gfads/user:10b11fe9
         ports:
         - containerPort: 80
         env:
+        - name: ZIPKIN
+          value: http://zipkin.zipkin.svc.cluster.local/api/v1/span
         - name: MONGO_HOST
           value: user-db:27017
         securityContext:
@@ -650,3 +669,115 @@ spec:
     targetPort: 80
   selector:
     name: user
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: zipkin
+  labels:
+    name: zipkin
+  namespace: zipkin
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: zipkin
+    spec:
+      containers:
+      - name: zipkin
+        image: openzipkin/zipkin
+        ports:
+        - containerPort: 9411
+        env:
+        - name: STORAGE_TYPE
+          value: mysql
+        - name: MYSQL_HOST
+          value: zipkin-mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zipkin
+  labels:
+    name: zipkin
+  namespace: zipkin
+spec:
+  type: NodePort
+  ports:
+    # the port that this service should serve on
+  - port: 9411
+    targetPort: 9411
+    nodePort: 30002
+  selector:
+    name: zipkin
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: zipkin-mysql
+  labels:
+    name: zipkin-mysql
+  namespace: zipkin
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: zipkin-mysql
+    spec:
+      containers:
+      - name: zipkin-mysql
+        image: openzipkin/zipkin-mysql:1.20.0
+        ports:
+        - name: mysql
+          containerPort: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zipkin-mysql
+  labels:
+    name: zipkin-mysql
+  namespace: zipkin
+spec:
+  type: NodePort
+  ports:
+    # the port that this service should serve on
+  - port: 3306
+    targetPort: 3306
+    nodePort: 30306
+  selector:
+    name: zipkin-mysql
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: zipkin-cron
+  labels:
+    name: zipkin-cron
+  namespace: zipkin
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: zipkin-cron
+    spec:
+      containers:
+      - name: zipkin-cron
+        image: openzipkin/zipkin-dependencies:1.4.0
+        env:
+        - name: STORAGE_TYPE
+          value: mysql
+        - name: MYSQL_HOST
+          value: zipkin-mysql
+        - name: MYSQL_USER
+          value: zipkin
+        - name: MYSQL_PASS
+          value: zipkin
+        command: ["crond"]
+        args: ["-f"]
+---
