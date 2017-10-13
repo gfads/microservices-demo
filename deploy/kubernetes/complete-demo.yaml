@@ -438,8 +438,15 @@ spec:
       containers:
       - name: queue-master
         image: gfads/queue-master
+        volumeMounts:
+          - mountPath: /var/run/docker.sock
+            name: docker-sock
         ports:
         - containerPort: 80
+      volumes:
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
       nodeSelector:
         beta.kubernetes.io/os: linux
 ---
