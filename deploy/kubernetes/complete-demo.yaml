@@ -84,7 +84,7 @@ spec:
          - containerPort: 80
         env:
          - name: ZIPKIN
-           value: http://zipkin.zipkin.svc.cluster.local
+           value: zipkin.zipkin.svc.cluster.local
          - name: JAVA_OPTS
            value: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
         securityContext:
@@ -183,7 +183,7 @@ spec:
         image: gfads/catalogue:5a476e87
         env:
           - name: ZIPKIN
-            value: http://zipkin.zipkin.svc.cluster.local/api/v1/spans
+            value: http://zipkin.zipkin.svc.cluster.local:9411/api/v1/spans
         ports:
         - containerPort: 80
         securityContext:
@@ -333,7 +333,7 @@ spec:
         image: weaveworksdemos/orders
         env:
          - name: ZIPKIN
-           value: http://zipkin.zipkin.svc.cluster.local
+           value: zipkin.zipkin.svc.cluster.local
          - name: JAVA_OPTS
            value: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
         ports:
@@ -391,7 +391,7 @@ spec:
         image: gfads/payment:a440cf61
         env:
         - name: ZIPKIN
-          value: http://zipkin.zipkin.svc.cluster.local/api/v1/spans
+          value: http://zipkin.zipkin.svc.cluster.local:9411/api/v1/spans
         ports:
         - containerPort: 80
         securityContext:
@@ -488,7 +488,7 @@ spec:
               - SETGID
               - SETUID
               - DAC_OVERRIDE
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: false
       nodeSelector:
         beta.kubernetes.io/os: linux
 ---
@@ -505,7 +505,7 @@ spec:
   - port: 5672
     targetPort: 5672
   selector:
-    name: rabbitm
+    name: rabbitmq
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -526,7 +526,7 @@ spec:
         image: weaveworksdemos/shipping
         env:
          - name: ZIPKIN
-           value: http://zipkin.zipkin.svc.cluster.local
+           value: zipkin.zipkin.svc.cluster.local
          - name: JAVA_OPTS
            value: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
         ports:
@@ -640,7 +640,7 @@ spec:
         - containerPort: 80
         env:
         - name: ZIPKIN
-          value: http://zipkin.zipkin.svc.cluster.local/api/v1/span
+          value: http://zipkin.zipkin.svc.cluster.local:9411/api/v1/spans
         - name: MONGO_HOST
           value: user-db:27017
         securityContext:
