@@ -36,8 +36,8 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: orders
-        port_value: 8080
+        address: orders-envoy
+        port_value: 80
 admin:
   access_log_path: "/dev/null"
   address:
