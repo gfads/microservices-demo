@@ -107,6 +107,9 @@ services:
       - '8080:8080'
     extra_hosts:
       - 'user:$ORDERS_ENVOY_IP'
+      - 'carts:$ORDERS_ENVOY_IP'
+      - 'shipping:$ORDERS_ENVOY_IP'
+      - 'payment:$ORDERS_ENVOY_IP'
   orders-db:
     image: mongo:3.4
     hostname: orders-db

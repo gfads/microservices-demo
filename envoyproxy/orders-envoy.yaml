@@ -46,9 +46,21 @@ static_resources:
               - "*"
               routes:
               - match:
-                  prefix: "/"
+                  regex: "/(customers|addresses|cards)/*[a-z0-9]*"
                 route:
                   cluster: user_service
+              - match:
+                  prefix: "/carts"
+                route:
+                  cluster: carts_service
+              - match:
+                  prefix: "/paymentAuth"
+                route:
+                  cluster: payment_service
+              - match:
+                  prefix: "/shipping"
+                route:
+                  cluster: shipping_service
           http_filters:
           - name: envoy.router
             config: {}
@@ -67,8 +79,32 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: user
-        port_value: 8080
+        address: user-envoy
+        port_value: 80
+  - name: carts_service
+    connect_timeout: 0.250s
+    type: strict_dns
+    lb_policy: round_robin
+    hosts:
+    - socket_address:
+        address: carts-envoy
+        port_value: 80
+  - name: payment_service
+    connect_timeout: 0.250s
+    type: strict_dns
+    lb_policy: round_robin
+    hosts:
+    - socket_address:
+        address: payment-envoy
+        port_value: 80
+  - name: shipping_service
+    connect_timeout: 0.250s
+    type: strict_dns
+    lb_policy: round_robin
+    hosts:
+    - socket_address:
+        address: shipping-envoy
+        port_value: 80
 admin:
   access_log_path: "/dev/null"
   address:
