@@ -103,8 +103,6 @@ services:
       - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
     volumes:
       - ../../envoyproxy/orders-envoy.yaml:/etc/orders-envoy.yaml
-    ports:
-      - '8080:8080'
     extra_hosts:
       - 'user:$ORDERS_ENVOY_IP'
       - 'carts:$ORDERS_ENVOY_IP'
