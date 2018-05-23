@@ -224,3 +224,9 @@ services:
       - SERVICE_NAME=user
     volumes:
       - ../../envoyproxy/user-envoy.yaml:/etc/envoy/envoy.yaml
+  zipkin:
+    image: openzipkin/zipkin
+    expose:
+      - "9411"
+    ports:
+      - "9411:9411"
