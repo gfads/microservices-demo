@@ -55,7 +55,7 @@ services:
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
       - MYSQL_DATABASE=socksdb
   carts:
-    image: gfads/carts:rbinder
+    image: gfads/carts:ldpreload
     hostname: carts
     restart: always
     cap_drop:
@@ -89,7 +89,7 @@ services:
     volumes:
       - ../../envoyproxy/carts-envoy.yaml:/etc/envoy/envoy.yaml
   orders:
-    image: gfads/orders:rbinder
+    image: gfads/orders:ldpreload
     hostname: orders
     restart: always
     cap_drop:
@@ -130,7 +130,7 @@ services:
     volumes:
       - ../../envoyproxy/orders-envoy.yaml:/etc/envoy/envoy.yaml
   shipping:
-    image: gfads/shipping:rbinder
+    image: gfads/shipping:ldpreload
     hostname: shipping
     restart: always
     cap_drop:
@@ -176,7 +176,7 @@ services:
       - DAC_OVERRIDE
     read_only: true
   payment:
-    image: gfads/payment:rbinder
+    image: gfads/payment:ldpreload
     hostname: payment
     restart: always
     cap_drop:
@@ -193,7 +193,7 @@ services:
     volumes:
       - ../../envoyproxy/payment-envoy.yaml:/etc/envoy/envoy.yaml
   user:
-    image: gfads/user:rbinder
+    image: gfads/user:ldpreload
     hostname: user
     restart: always
     cap_drop:
